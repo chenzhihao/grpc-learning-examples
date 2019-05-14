@@ -11,7 +11,6 @@ import (
 
 const (
 	address     = "localhost:50051"
-	defaultName = "world"
 )
 
 func main() {
@@ -25,9 +24,9 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.GetProduct(ctx, &pb.ProductRequest{Id: "123"})
+	r, err := c.GetProduct(ctx, &pb.ProductRequest{Id: "1"})
 	if err != nil {
 		log.Fatalf("can't get product: %v", err)
 	}
-	log.Printf("product: %s", r.Name)
+	log.Printf("product: %s, price: %f", r.Name, r.Price)
 }
