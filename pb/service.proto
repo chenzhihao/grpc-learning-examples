@@ -1,12 +1,21 @@
 syntax = "proto3";
 package pb;
 service ProductService {
-  rpc GetProduct(ProductRequest) returns (ProductReply) {}
+    rpc GetProduct (ProductRequest) returns (ProductReply) {
+    }
+    rpc GetProductStream (ProductListRequest) returns (stream ProductReply) {
+    }
 }
 
-message ProductRequest { string id = 1; }
+message ProductRequest {
+     string id = 1;
+}
+
+message ProductListRequest {
+    repeated string id = 1;
+}
 
 message ProductReply {
-  string name = 1;
-  double price = 2;
+    string name = 1;
+    double price = 2;
 }

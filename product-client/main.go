@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 )
 
 const (
-	address     = "localhost:50051"
+	address = "localhost:50051"
 )
 
 func main() {
@@ -22,11 +23,29 @@ func main() {
 	defer conn.Close()
 	c := pb.NewProductServiceClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	clientDeadline := time.Now().Add(time.Duration(5000) * time.Millisecond)
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+
 	defer cancel()
 	r, err := c.GetProduct(ctx, &pb.ProductRequest{Id: "1"})
 	if err != nil {
 		log.Fatalf("can't get product: %v", err)
 	}
-	log.Printf("product: %s, price: %f", r.Name, r.Price)
+	log.Printf("[RECEIVED RESPONSE]: %v\n", r)
+
+	stream, err := c.GetProductStream(ctx, &pb.ProductListRequest{Id: []string{"1", "2", "3"}})
+	if err != nil {
+		log.Fatalf("can't get product list: %v", err)
+	}
+
+	for {
+		resp, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("receive error: %v", err)
+		}
+		log.Printf("[RECEIVED STREAM RESPONSE]: %v\n", resp) // 输出响应
+	}
 }

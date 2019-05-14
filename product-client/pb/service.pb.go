@@ -34,7 +34,7 @@ func (m *ProductRequest) Reset()         { *m = ProductRequest{} }
 func (m *ProductRequest) String() string { return proto.CompactTextString(m) }
 func (*ProductRequest) ProtoMessage()    {}
 func (*ProductRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_service_5e64f6c865c0a1dc, []int{0}
+	return fileDescriptor_service_d405f07510316bc6, []int{0}
 }
 func (m *ProductRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProductRequest.Unmarshal(m, b)
@@ -61,6 +61,44 @@ func (m *ProductRequest) GetId() string {
 	return ""
 }
 
+type ProductListRequest struct {
+	Id                   []string `protobuf:"bytes,1,rep,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ProductListRequest) Reset()         { *m = ProductListRequest{} }
+func (m *ProductListRequest) String() string { return proto.CompactTextString(m) }
+func (*ProductListRequest) ProtoMessage()    {}
+func (*ProductListRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_d405f07510316bc6, []int{1}
+}
+func (m *ProductListRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ProductListRequest.Unmarshal(m, b)
+}
+func (m *ProductListRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ProductListRequest.Marshal(b, m, deterministic)
+}
+func (dst *ProductListRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProductListRequest.Merge(dst, src)
+}
+func (m *ProductListRequest) XXX_Size() int {
+	return xxx_messageInfo_ProductListRequest.Size(m)
+}
+func (m *ProductListRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProductListRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProductListRequest proto.InternalMessageInfo
+
+func (m *ProductListRequest) GetId() []string {
+	if m != nil {
+		return m.Id
+	}
+	return nil
+}
+
 type ProductReply struct {
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Price                float64  `protobuf:"fixed64,2,opt,name=price,proto3" json:"price,omitempty"`
@@ -73,7 +111,7 @@ func (m *ProductReply) Reset()         { *m = ProductReply{} }
 func (m *ProductReply) String() string { return proto.CompactTextString(m) }
 func (*ProductReply) ProtoMessage()    {}
 func (*ProductReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_service_5e64f6c865c0a1dc, []int{1}
+	return fileDescriptor_service_d405f07510316bc6, []int{2}
 }
 func (m *ProductReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProductReply.Unmarshal(m, b)
@@ -109,6 +147,7 @@ func (m *ProductReply) GetPrice() float64 {
 
 func init() {
 	proto.RegisterType((*ProductRequest)(nil), "pb.ProductRequest")
+	proto.RegisterType((*ProductListRequest)(nil), "pb.ProductListRequest")
 	proto.RegisterType((*ProductReply)(nil), "pb.ProductReply")
 }
 
@@ -125,6 +164,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type ProductServiceClient interface {
 	GetProduct(ctx context.Context, in *ProductRequest, opts ...grpc.CallOption) (*ProductReply, error)
+	GetProductStream(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (ProductService_GetProductStreamClient, error)
 }
 
 type productServiceClient struct {
@@ -144,9 +184,42 @@ func (c *productServiceClient) GetProduct(ctx context.Context, in *ProductReques
 	return out, nil
 }
 
+func (c *productServiceClient) GetProductStream(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (ProductService_GetProductStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ProductService_serviceDesc.Streams[0], "/pb.ProductService/GetProductStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &productServiceGetProductStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ProductService_GetProductStreamClient interface {
+	Recv() (*ProductReply, error)
+	grpc.ClientStream
+}
+
+type productServiceGetProductStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *productServiceGetProductStreamClient) Recv() (*ProductReply, error) {
+	m := new(ProductReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ProductServiceServer is the server API for ProductService service.
 type ProductServiceServer interface {
 	GetProduct(context.Context, *ProductRequest) (*ProductReply, error)
+	GetProductStream(*ProductListRequest, ProductService_GetProductStreamServer) error
 }
 
 func RegisterProductServiceServer(s *grpc.Server, srv ProductServiceServer) {
@@ -171,6 +244,27 @@ func _ProductService_GetProduct_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProductService_GetProductStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ProductListRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ProductServiceServer).GetProductStream(m, &productServiceGetProductStreamServer{stream})
+}
+
+type ProductService_GetProductStreamServer interface {
+	Send(*ProductReply) error
+	grpc.ServerStream
+}
+
+type productServiceGetProductStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *productServiceGetProductStreamServer) Send(m *ProductReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 var _ProductService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.ProductService",
 	HandlerType: (*ProductServiceServer)(nil),
@@ -180,22 +274,30 @@ var _ProductService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _ProductService_GetProduct_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetProductStream",
+			Handler:       _ProductService_GetProductStream_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "service.proto",
 }
 
-func init() { proto.RegisterFile("service.proto", fileDescriptor_service_5e64f6c865c0a1dc) }
+func init() { proto.RegisterFile("service.proto", fileDescriptor_service_d405f07510316bc6) }
 
-var fileDescriptor_service_5e64f6c865c0a1dc = []byte{
-	// 154 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_service_d405f07510316bc6 = []byte{
+	// 192 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2d, 0x4e, 0x2d, 0x2a,
 	0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0x52, 0xe0,
 	0xe2, 0x0b, 0x28, 0xca, 0x4f, 0x29, 0x4d, 0x2e, 0x09, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11,
 	0xe2, 0xe3, 0x62, 0xca, 0x4c, 0x91, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x62, 0xca, 0x4c, 0x51,
-	0xb2, 0xe0, 0xe2, 0x81, 0xab, 0x28, 0xc8, 0xa9, 0x14, 0x12, 0xe2, 0x62, 0xc9, 0x4b, 0xcc, 0x4d,
-	0x85, 0xaa, 0x00, 0xb3, 0x85, 0x44, 0xb8, 0x58, 0x0b, 0x8a, 0x32, 0x93, 0x53, 0x25, 0x98, 0x14,
-	0x18, 0x35, 0x18, 0x83, 0x20, 0x1c, 0x23, 0x37, 0xb8, 0xd9, 0xc1, 0x10, 0x7b, 0x85, 0x4c, 0xb8,
-	0xb8, 0xdc, 0x53, 0x4b, 0xa0, 0x82, 0x42, 0x42, 0x7a, 0x05, 0x49, 0x7a, 0xa8, 0xb6, 0x4b, 0x09,
-	0xa0, 0x88, 0x15, 0xe4, 0x54, 0x2a, 0x31, 0x24, 0xb1, 0x81, 0x9d, 0x6b, 0x0c, 0x08, 0x00, 0x00,
-	0xff, 0xff, 0x5b, 0x24, 0x78, 0x13, 0xbf, 0x00, 0x00, 0x00,
+	0x52, 0xe1, 0x12, 0x82, 0xaa, 0xf0, 0xc9, 0x2c, 0xc6, 0x50, 0xc5, 0x0c, 0x55, 0x65, 0xc1, 0xc5,
+	0x03, 0x37, 0xa7, 0x20, 0xa7, 0x52, 0x48, 0x88, 0x8b, 0x25, 0x2f, 0x31, 0x37, 0x15, 0x6a, 0x0e,
+	0x98, 0x2d, 0x24, 0xc2, 0xc5, 0x5a, 0x50, 0x94, 0x99, 0x9c, 0x2a, 0xc1, 0xa4, 0xc0, 0xa8, 0xc1,
+	0x18, 0x04, 0xe1, 0x18, 0x75, 0x30, 0xc2, 0x9d, 0x10, 0x0c, 0x71, 0x9e, 0x90, 0x09, 0x17, 0x97,
+	0x7b, 0x6a, 0x09, 0x54, 0x50, 0x48, 0x48, 0xaf, 0x20, 0x49, 0x0f, 0xd5, 0x91, 0x52, 0x02, 0x28,
+	0x62, 0x05, 0x39, 0x95, 0x4a, 0x0c, 0x42, 0x0e, 0x5c, 0x02, 0x08, 0x5d, 0xc1, 0x25, 0x45, 0xa9,
+	0x89, 0xb9, 0x42, 0x62, 0x48, 0xea, 0x90, 0x9c, 0x8f, 0x4d, 0xbf, 0x01, 0x63, 0x12, 0x1b, 0x38,
+	0x5c, 0x8c, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x02, 0x50, 0x2f, 0x9a, 0x28, 0x01, 0x00, 0x00,
 }
