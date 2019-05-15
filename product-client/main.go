@@ -23,15 +23,30 @@ func main() {
 	defer conn.Close()
 	c := pb.NewProductServiceClient(conn)
 
+	ch := make(chan bool, 2)
+	go getProduct(c, ch)
+	go getProductStream(c, ch)
+	<-ch
+	<-ch
+}
+
+func getProduct(c pb.ProductServiceClient, done chan<- bool) {
 	clientDeadline := time.Now().Add(time.Duration(5000) * time.Millisecond)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
-
 	defer cancel()
+
 	r, err := c.GetProduct(ctx, &pb.ProductRequest{Id: "1"})
 	if err != nil {
 		log.Fatalf("can't get product: %v", err)
 	}
 	log.Printf("[RECEIVED RESPONSE]: %v\n", r)
+	done <- true
+}
+
+func getProductStream(c pb.ProductServiceClient, done chan<- bool) {
+	clientDeadline := time.Now().Add(time.Duration(50000) * time.Millisecond)
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+	defer cancel()
 
 	stream, err := c.GetProductStream(ctx, &pb.ProductListRequest{Id: []string{"1", "2", "3"}})
 	if err != nil {
@@ -46,6 +61,8 @@ func main() {
 		if err != nil {
 			log.Fatalf("receive error: %v", err)
 		}
-		log.Printf("[RECEIVED STREAM RESPONSE]: %v\n", resp) // 输出响应
+		log.Printf("[RECEIVED STREAM RESPONSE]: %v\n", resp)
 	}
+
+	done <- true
 }
