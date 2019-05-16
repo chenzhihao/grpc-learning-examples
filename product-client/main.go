@@ -21,16 +21,58 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewProductServiceClient(conn)
+	c := pb.NewProductClient(conn)
 
-	ch := make(chan bool, 2)
+	ch := make(chan bool, 3)
 	go getProduct(c, ch)
 	go getProductStream(c, ch)
+	go chat(c, ch)
+	<-ch
 	<-ch
 	<-ch
 }
 
-func getProduct(c pb.ProductServiceClient, done chan<- bool) {
+func chat(c pb.ProductClient, done chan<- bool) {
+	clientDeadline := time.Now().Add(time.Duration(5000) * time.Millisecond)
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+	stream, err := c.Chat(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	messages := []pb.Message{{Message: "zhihao"}, {Message: "test"}}
+
+	go func() {
+		defer cancel()
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				done <- true
+				return
+			}
+			if err != nil {
+				done <- true
+				log.Fatalf("Failed to receive a note : %v", err)
+			}
+			log.Printf("Got message %s \n", in.Message)
+		}
+	}()
+
+	for _, msg := range messages {
+		time.Sleep(1 * time.Second)
+		err := stream.Send(&msg)
+		if err != nil {
+			log.Fatalf("Failed to send a message: %v", err)
+		}
+	}
+
+	err = stream.CloseSend()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func getProduct(c pb.ProductClient, done chan<- bool) {
 	clientDeadline := time.Now().Add(time.Duration(5000) * time.Millisecond)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 	defer cancel()
@@ -43,7 +85,7 @@ func getProduct(c pb.ProductServiceClient, done chan<- bool) {
 	done <- true
 }
 
-func getProductStream(c pb.ProductServiceClient, done chan<- bool) {
+func getProductStream(c pb.ProductClient, done chan<- bool) {
 	clientDeadline := time.Now().Add(time.Duration(50000) * time.Millisecond)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 	defer cancel()

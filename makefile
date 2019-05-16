@@ -1,11 +1,11 @@
 .PHONY: grpc
-grpc: ## Compile all the protocol buffer files to service and client folders
-	 protoc -I pb service.proto --go_out=plugins=grpc:product-service/pb
+grpc: ## Compile all the protocol buffer files to server and client folders
+	 protoc -I pb service.proto --go_out=plugins=grpc:product-server/pb
 	 protoc -I pb service.proto --go_out=plugins=grpc:product-client/pb
 
-.PHONY: run-service
-run-service:
-	 cd product-service; go run main.go; echo "Running gRPC server"
+.PHONY: run-server
+run-server:
+	 cd product-server; go run main.go; echo "Running gRPC server"
 
 .PHONY: run-client
 run-client:
