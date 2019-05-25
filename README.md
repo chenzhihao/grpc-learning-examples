@@ -1,4 +1,4 @@
-# gRPC Showcase
+# gRPC Learning Examples
 
 The purpose of this repo is providing some simple examples for people to learn gRPC.
 
