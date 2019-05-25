@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (s *Server) Chat(stream pb.Product_ChatServer) error {
+func (s *Server) Chat(stream pb.Warehouse_ChatServer) error {
 	for {
 		time.Sleep(1 * time.Second)
 		message, err := stream.Recv()

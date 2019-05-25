@@ -1,22 +1,31 @@
 syntax = "proto3";
 package pb;
-service Product{
-    rpc GetProduct (ProductRequest) returns (ProductReply) {
-    }
-    rpc GetProductStream (ProductListRequest) returns (stream ProductReply) {
-    }
-    rpc Chat(stream Message) returns (stream Message) {}
+
+import "google/protobuf/empty.proto";
+
+service Warehouse {
+    rpc GetProduct (GetProductRequest) returns (Product) {}
+
+    rpc ListProducts (ListProductsRequest) returns (stream Product) {}
+
+    rpc CreateProducts (stream CreateProductRequest) returns (google.protobuf.Empty) {}
+
+    rpc Chat (stream Message) returns (stream Message) {}
 }
 
-message ProductRequest {
-     string id = 1;
+message GetProductRequest {
+    string id = 1;
 }
 
-message ProductListRequest {
-    repeated string id = 1;
+message ListProductsRequest {
+    repeated GetProductRequest requests = 1;
 }
 
-message ProductReply {
+message CreateProductRequest {
+    Product product = 1;
+}
+
+message Product {
     string name = 1;
     double price = 2;
 }

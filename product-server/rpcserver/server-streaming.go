@@ -8,17 +8,17 @@ import (
 	"time"
 )
 
-func (s *Server) GetProductStream(in *pb.ProductListRequest, stream pb.Product_GetProductStreamServer) error {
-	log.Printf("Received: %v \n", in.Id)
-	for _, Id := range in.Id {
-		if product, ok := products[Id]; ok == true {
-			err := stream.Send(&pb.ProductReply{Name: product.Name, Price: product.Price})
+func (s *Server) ListProducts(in *pb.ListProductsRequest, stream pb.Warehouse_ListProductsServer) error {
+	log.Printf("Received: %v \n", in.Requests)
+	for _, Request := range in.Requests {
+		if product, ok := products[Request.Id]; ok == true {
+			err := stream.Send(&pb.Product{Name: product.Name, Price: product.Price})
 			time.Sleep(1 * time.Second)
 			if err != nil {
 				return err
 			}
 		} else {
-			return errors.New(fmt.Sprintf("no product found for ID %s", Id))
+			return errors.New(fmt.Sprintf("no product found for ID %s", Request.Id))
 		}
 	}
 

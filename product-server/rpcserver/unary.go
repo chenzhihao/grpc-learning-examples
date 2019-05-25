@@ -31,10 +31,10 @@ var products = map[string]Product{
 
 type Server struct{}
 
-func (s *Server) GetProduct(ctx context.Context, in *pb.ProductRequest) (*pb.ProductReply, error) {
+func (s *Server) GetProduct(ctx context.Context, in *pb.GetProductRequest) (*pb.Product, error) {
 	log.Printf("Received: %v \n", in.Id)
 	if product, ok := products[in.Id]; ok == true {
-		return &pb.ProductReply{Name: product.Name, Price: product.Price}, nil
+		return &pb.Product{Name: product.Name, Price: product.Price}, nil
 	}
 	return nil, errors.New(fmt.Sprintf("no product found for ID %s", in.Id))
 }
