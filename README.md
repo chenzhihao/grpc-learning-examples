@@ -4,13 +4,13 @@ The purpose of this repo is providing some simple examples for people to learn g
 
 Including:
 
-- [x] unary gRPC
+- [x] [unary gRPC](product-server/rpcserver/unary.go)
 
-- [x] server streaming gRPC
+- [x] [server streaming gRPC](product-server/rpcserver/server-streaming.go)
 
-- [x] client streaming gRPC
+- [x] [client streaming gRPC](product-server/rpcserver/client-streaming.go)
 
-- [x] bidirectional streaming gRPC
+- [x] [bidirectional streaming gRPC](product-server/rpcserver/bidirectional-streaming.go)
 
 - [ ] gRPC interceptor
 
