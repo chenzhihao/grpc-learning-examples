@@ -1,29 +1,29 @@
-.PHONY: grpc-client
-grpc-client: ## Compile all the protocol buffer files to client folders
+.PHONY: protobuf-client
+protobuf-client: ## Compile all the protocol buffer files to client folders
 	 rm -rf ./product-client/pb;\
 	 mkdir -p ./product-client/pb;\
 	 protoc -I pb service.proto --go_out=plugins=grpc:product-client/pb;
 
-.PHONY: grpc-server
-grpc-server: ## Compile all the protocol buffer files to server folders
+.PHONY: protobuf-server
+protobuf-server: ## Compile all the protocol buffer files to server folders
 	 rm -rf ./product-server/pb;\
 	 mkdir -p ./product-server/pb;\
 	 protoc -I pb service.proto --go_out=plugins=grpc:product-server/pb;
 
-.PHONY: grpc
-grpc: grpc-client grpc-server
+.PHONY: protobuf
+protobuf: protobuf-client protobuf-server
 
 .PHONY: run-server
 run-server:
-	 cd product-server && go run main.go && echo "Running gRPC server"
+	 @cd product-server  && echo "Running gRPC server" && go run main.go
 .PHONY: server
-server: grpc-server run-server ## Run gRPC server
+server: protobuf-server run-server ## Run gRPC server
 
 .PHONY: run-client
 run-client:
-	 cd product-client && go run main.go && echo "Running gRPC client"
+	 @cd product-client && echo "Running gRPC client" && go run main.go
 .PHONY: client
-client: grpc-client run-client ## Run gRPC client
+client: protobuf-client run-client ## Run gRPC client
 
 .PHONY: help
 help:
