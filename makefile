@@ -25,6 +25,14 @@ run-client:
 .PHONY: client
 client: protobuf-client run-client ## Run gRPC client
 
+.PHONY: go-mod-client
+go-mod-client:
+	@cd product-client && go mod tidy
+.PHONY: go-mod-server
+go-mod-server:
+	@cd product-server && go mod tidy
+.PHONY: go-mod
+go-mod: go-mod-client go-mod-server ## go mod tidy for both server and client
 .PHONY: help
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
