@@ -26,9 +26,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer(
-		withServerUnaryInterceptor(),
-	)
+	s := rpcserver.NewGrpcServer()
 
 	pb.RegisterWarehouseServer(s, &rpcserver.Server{})
 	reflection.Register(s)
